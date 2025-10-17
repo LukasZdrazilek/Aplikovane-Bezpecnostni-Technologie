@@ -1,12 +1,21 @@
 $startDate = (Get-Date).AddDays(-10)
 
 # Nejprve se pokusíme získat chyby
-$events = Get-WinEvent -LogName System -FilterXPath "*[System[Level=2] and TimeCreated[@SystemTime >= '$($startDate.ToString("yyyy-MM-ddTHH:mm:ss"))']]" -ErrorAction SilentlyContinue
+$filterError = @{
+    LogName = 'System'
+}
+
+# Získáme všechny události z posledních 10 dní a filtrujeme je podle času a úrovně
+$events = Get-WinEvent @filterError -ErrorAction SilentlyContinue | 
+    Where-Object { $_.TimeCreated -ge $startDate -and $_.Level -eq 2 }
 
 # Pokud nejsou žádné chyby, zkusíme upozornění
 if ($events.Count -eq 0) {
     Write-Host "Žádné chyby. Zkouším hledat upozornění..."
-    $events = Get-WinEvent -LogName System -FilterXPath "*[System[Level=3] and TimeCreated[@SystemTime >= '$($startDate.ToString("yyyy-MM-ddTHH:mm:ss"))']]" -ErrorAction SilentlyContinue
+    
+    # Filtrujeme upozornění (Level 3)
+    $events = Get-WinEvent @filterError -ErrorAction SilentlyContinue | 
+        Where-Object { $_.TimeCreated -ge $startDate -and $_.Level -eq 3 }
 }
 
 # Pokud máme nějaké události, vypíšeme je
