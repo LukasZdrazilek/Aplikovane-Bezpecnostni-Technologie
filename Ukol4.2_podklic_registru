@@ -1,0 +1,25 @@
+# Vytvoření cesty k registru
+$regKeyPath = 'HKCU:\Software\Hrátky s PowerShellem'
+
+# Vytvoření klíče, pokud ještě neexistuje
+if (-not (Test-Path $regKeyPath)) {
+    New-Item -Path $regKeyPath -Force
+}
+
+# Získání potřebných informací
+$userName = $env:USERNAME
+$computerName = $env:COMPUTERNAME
+$currentDate = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+$psVersion = $PSVersionTable.PSVersion.ToString()
+
+# Uložení hodnot do registru
+Set-ItemProperty -Path $regKeyPath -Name 'UživatelskéJméno' -Value $userName
+Set-ItemProperty -Path $regKeyPath -Name 'JménoPočítače' -Value $computerName
+Set-ItemProperty -Path $regKeyPath -Name 'AktuálníDatum' -Value $currentDate
+Set-ItemProperty -Path $regKeyPath -Name 'VerzePowerShellu' -Value $psVersion
+
+# Výpis informací pro potvrzení
+Write-Host "Jméno uživatele: $userName"
+Write-Host "Jméno počítače: $computerName"
+Write-Host "Aktuální datum: $currentDate"
+Write-Host "Verze PowerShellu: $psVersion"
