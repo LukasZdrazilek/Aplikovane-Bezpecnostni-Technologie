@@ -1,2 +1,4 @@
 Get-CimClass -ClassName Win32_Printer
-Set-CimInstance -ClassName Win32_Fax -Property @{Location="Nové umístění"}
+
+$printer = Get-CimInstance -ClassName Win32_Printer -Filter "Name='Fax'"
+Set-CimInstance -InputObject $printer -Property @{ Location = "Nové umístění" }
