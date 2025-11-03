@@ -1,2 +1,2 @@
-Get-CimInstance -ClassName Win32_LogicalDisk | Where-Object {$_.DeviceID -eq "C:"}
-(Get-CimInstance -ClassName Win32_LogicalDisk | Where-Object {$_.DeviceID -eq "C:"}).Rename("Systém")
+$disk = Get-CimInstance -ClassName Win32_LogicalDisk | Where-Object {$_.DeviceID -eq "C:"}
+$disk | Set-CimInstance -Property @{VolumeName="Systém"}
