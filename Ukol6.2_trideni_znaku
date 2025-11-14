@@ -1,0 +1,8 @@
+# Původní text
+$text = "Kobyla má malý bok"
+
+# Seřazení znaků v textu vzestupně, zachování mezer
+$sortedText = -join ($text.ToCharArray() | Sort-Object)
+
+# Výpis se seřazenými znaky
+Write-Host $sortedText
