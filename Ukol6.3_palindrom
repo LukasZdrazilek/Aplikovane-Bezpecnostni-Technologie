@@ -1,0 +1,46 @@
+# Funkce pro kontrolu, zda je číslo palindrom
+function Is-Palindrome {
+    param (
+        [int]$number
+    )
+
+    # Převede číslo na řetězec
+    $numberString = $number.ToString()
+
+    # Obrátí pole znaků a vytvoří nový řetězec
+    $reversedArray = $numberString.ToCharArray()
+    [Array]::Reverse($reversedArray)
+    $reversedString = -join $reversedArray
+
+    # Porovná původní a obrácený řetězec
+    return $numberString -eq $reversedString
+}
+
+# Inicializace proměnných pro nejmenší a největší palindrom
+$smallestPalindrome = [int]::MaxValue
+$largestPalindrome = 0
+$smallestFactors = @()
+$largestFactors = @()
+
+# Procházení všech trojciferných čísel
+for ($i = 100; $i -le 999; $i++) {
+    for ($j = $i; $j -le 999; $j++) {
+        $product = $i * $j
+        if (Is-Palindrome $product) {
+            # Kontrola nejmenšího palindromu
+            if ($product -lt $smallestPalindrome) {
+                $smallestPalindrome = $product
+                $smallestFactors = @($i, $j)
+            }
+            # Kontrola největšího palindromu
+            if ($product -gt $largestPalindrome) {
+                $largestPalindrome = $product
+                $largestFactors = @($i, $j)
+            }
+        }
+    }
+}
+
+# Výpis výsledků
+Write-Host "Nejmenší palindrom: $smallestPalindrome (vytvořený násobením $($smallestFactors[0]) a $($smallestFactors[1]))"
+Write-Host "Největší palindrom: $largestPalindrome (vytvořený násobením $($largestFactors[0]) a $($largestFactors[1]))"
