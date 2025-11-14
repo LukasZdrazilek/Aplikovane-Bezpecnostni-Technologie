@@ -1,0 +1,9 @@
+# Generování 10 náhodných čísel mezi 10 a 100
+$randomNumbers = 1..10 | ForEach-Object { Get-Random -Minimum 10 -Maximum 101 }
+
+# Výpis čísel a jejich druhých mocnin s zarovnáním
+$randomNumbers | ForEach-Object {
+    $number = $_
+    $square = $number * $number
+    "{0,5} {1,6}" -f $number, $square
+}
