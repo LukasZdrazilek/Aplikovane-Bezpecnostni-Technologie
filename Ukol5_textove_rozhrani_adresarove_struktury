@@ -1,0 +1,89 @@
+# Funkce pro zobrazení informací o souborech v adresáři
+function Get-DirectoryInfo {
+    param (
+        [string]$Path
+    )
+
+    $files = Get-ChildItem -Path $Path -File
+    $totalFiles = $files.Count
+    $smallestFile = $files | Sort-Object Length | Select-Object -First 1
+    $largestFile = $files | Sort-Object Length -Descending | Select-Object -First 1
+
+    # Vytiskne informace
+    Write-Host "Adresář: $Path"
+    Write-Host "Počet souborů: $totalFiles"
+    Write-Host "Nejmenší soubor: $($smallestFile.Name) ($($smallestFile.Length) bytes)"
+    Write-Host "Největší soubor: $($largestFile.Name) ($($largestFile.Length) bytes)"
+    Write-Host ""
+}
+
+# Funkce pro zobrazení seznamu adresářů
+function Show-DirectoryList {
+    param (
+        [string]$Path
+    )
+
+    $directories = Get-ChildItem -Path $Path -Directory
+    if ($directories.Count -eq 0) {
+        Write-Host "Žádné adresáře v tomto umístění."
+    } else {
+        # Očíslování adresářů
+        $directories | ForEach-Object { 
+            $i = [Array]::IndexOf($directories, $_) + 1
+            Write-Host "$i. $($_.Name)"
+        }
+    }
+    return $directories
+}
+
+# Funkce pro navigaci
+function Navigate-Directory {
+    param (
+        [string]$CurrentPath
+    )
+
+    $exitFlag = $false
+    while (-not $exitFlag) {
+        # Vyčistit obrazovku
+        Clear-Host
+
+        # Zobrazit informace o aktuálním adresáři
+        Get-DirectoryInfo -Path $CurrentPath
+
+        # Zobrazit seznam podadresářů
+        $directories = Show-DirectoryList -Path $CurrentPath
+
+        # Zobrazit uživatelský výběr
+        Write-Host "Možnosti:"
+        Write-Host "U - Jít do nadřazeného adresáře"
+        Write-Host "Q - Ukončit program"
+        Write-Host "Zadejte číslo pro výběr adresáře"
+
+        $input = Read-Host
+
+        if ($input -eq 'Q') {
+            $exitFlag = $true
+        } elseif ($input -eq 'U') {
+            $CurrentPath = Split-Path $CurrentPath -Parent
+        } elseif ($input -match '^\d+$') {
+            $index = [int]$input - 1
+            if ($index -ge 0 -and $index -lt $directories.Count) {
+                $CurrentPath = $directories[$index].FullName
+            } else {
+                Write-Host "Neplatný výběr. Zkuste to znovu."
+                Start-Sleep -Seconds 2
+            }
+        } else {
+            Write-Host "Neplatný výběr."
+            Start-Sleep -Seconds 2
+        }
+    }
+}
+
+# Hlavní funkce
+$startPath = Read-Host "Zadejte počáteční cestu"
+if (Test-Path -Path $startPath) {
+    Navigate-Directory -CurrentPath $startPath
+} else {
+    Write-Host "Cesta neexistuje!"
+}
