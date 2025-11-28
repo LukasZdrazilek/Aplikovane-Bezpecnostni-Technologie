@@ -1,0 +1,47 @@
+# Nastavení intervalu kontroly (v sekundách) a klíčových slov
+$interval = 20
+$keywords = @("password", "token", "heslo", "klíč")
+
+# Proměnná pro uchování poslední známé hodnoty schránky
+$lastClipboardContent = $null
+
+Write-Host "--- Monitorování schránky spuštěno ---" -ForegroundColor Cyan
+Write-Host "Hledám klíčová slova: $($keywords -join ', ')" -ForegroundColor Gray
+Write-Host "Pro ukončení stiskni Ctrl+C" -ForegroundColor DarkGray
+
+while ($true) {
+    # Získání textového obsahu schránky (PS 7+ podporuje přímo textový výstup)
+    $currentClipboardContent = Get-Clipboard
+
+    # Kontrola, zda je obsah textový a zda se liší od posledního záznamu
+    if (-not [string]::IsNullOrWhiteSpace($currentClipboardContent) -and ($currentClipboardContent -ne $lastClipboardContent)) {
+        
+        # Aktualizace poslední známé hodnoty
+        $lastClipboardContent = $currentClipboardContent
+
+        # Vytvoření RegEx vzoru pro hledání (spojí slova s "OR" | a ignoruje velikost písmen)
+        $pattern = ($keywords | ForEach-Object { [System.Text.RegularExpressions.Regex]::Escape($_) }) -join "|"
+        
+        # Pokud obsah odpovídá některému z klíčových slov
+        if ($currentClipboardContent -match "(?i)$pattern") {
+            Write-Host "`n[$((Get-Date).ToString('HH:mm:ss'))] NALEZENO CITLIVÉ SLOVO:" -ForegroundColor Yellow
+            
+            # Logika pro zvýraznění slov v textu:
+            # Rozdělíme text podle klíčových slov, ale zachováme oddělovače (klíčová slova) díky závorkám v RegExu
+            $parts = [System.Text.RegularExpressions.Regex]::Split($currentClipboardContent, "(?i)($pattern)")
+
+            # Vypíšeme části - pokud je část klíčové slovo, bude červeně, jinak bíle
+            foreach ($part in $parts) {
+                if ($part -match "(?i)^($pattern)$") {
+                    Write-Host $part -NoNewline -ForegroundColor Red -BackgroundColor DarkRed
+                } else {
+                    Write-Host $part -NoNewline -ForegroundColor White
+                }
+            }
+            Write-Host "" # Odřádkování na konci
+        }
+    }
+
+    # Čekání před další kontrolou
+    Start-Sleep -Seconds $interval
+}
