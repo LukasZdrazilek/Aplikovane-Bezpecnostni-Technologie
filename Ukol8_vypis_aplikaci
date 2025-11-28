@@ -1,0 +1,21 @@
+# 1. Získání klasických aplikací (Registry: HKLM 64/32bit + HKCU)
+$regPaths = @(
+    "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
+    "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall",
+    "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall"
+)
+
+$win32 = $regPaths | ForEach-Object { Get-ChildItem $_ -ErrorAction SilentlyContinue } | 
+    ForEach-Object { Get-ItemProperty $_.PSPath } | 
+    Where-Object { -not [string]::IsNullOrWhiteSpace($_.DisplayName) } |
+    Select-Object @{N='Name';E={$_.DisplayName}}, @{N='Version';E={$_.DisplayVersion}}, @{N='Publisher';E={$_.Publisher}}, @{N='Type';E={'Win32'}}
+
+# 2. Získání Store aplikací (Appx) + vyčištění Publishera
+$store = Get-AppxPackage | 
+    Select-Object @{N='Name';E={$_.Name}}, @{N='Version';E={$_.Version}}, @{N='Publisher';E={$_.Publisher -replace 'CN=(.*?)(,.*)?$','$1'}}, @{N='Type';E={'Store App'}}
+
+# 3. Sloučení, seřazení a výpis
+$win32 + $store | 
+    Sort-Object Name | 
+    Select-Object Name, Version, Publisher, Type -Unique | 
+    Format-Table -AutoSize
