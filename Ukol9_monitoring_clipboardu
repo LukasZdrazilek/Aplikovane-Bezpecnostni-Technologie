@@ -45,3 +45,5 @@ while ($true) {
     # Čekání před další kontrolou
     Start-Sleep -Seconds $interval
 }
+
+# KeepasXC proti takovému útoku rozhodně odolný není, klasicky jen předává heslo do clipboardu
