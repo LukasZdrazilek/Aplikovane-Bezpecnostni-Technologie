@@ -1,0 +1,1 @@
+Bohužel se mi nepodařilo
