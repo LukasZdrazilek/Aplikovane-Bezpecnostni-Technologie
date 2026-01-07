@@ -14,8 +14,13 @@ $win32 = $regPaths | ForEach-Object { Get-ChildItem $_ -ErrorAction SilentlyCont
 $store = Get-AppxPackage | 
     Select-Object @{N='Name';E={$_.Name}}, @{N='Version';E={$_.Version}}, @{N='Publisher';E={$_.Publisher -replace 'CN=(.*?)(,.*)?$','$1'}}, @{N='Type';E={'Store App'}}
 
-# 3. Sloučení, seřazení a výpis
-$win32 + $store | 
+# 3. Získání balíčků přes PackageManagement (Get-Package)
+$packages = Get-Package -ErrorAction SilentlyContinue |
+    Select-Object @{N='Name';E={$_.Name}}, @{N='Version';E={$_.Version}}, @{N='Publisher';E={$_.Source}}, @{N='Type';E={'PackageMgmt'}}
+
+# 4. Sloučení, seřazení a výpis
+# Poznámka: Get-Package se může částečně překrývat s Win32, proto Select-Object -Unique odstraní přesné duplicity
+$win32 + $store + $packages | 
     Sort-Object Name | 
     Select-Object Name, Version, Publisher, Type -Unique | 
     Format-Table -AutoSize
